@@ -609,43 +609,37 @@ export default function App() {
   const [saveName, setSaveName] = useState("");
   const [showVoice, setShowVoice] = useState(false);
   const [voiceIdx, setVoiceIdx] = useState(0);
-  const [storageReady, setStorageReady] = useState(false);
 
   // Load saved lists
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await window.storage.get("spelling-lists");
-        if (res && res.value) setSavedLists(JSON.parse(res.value));
-      } catch (e) { /* no saved data yet */ }
-      setStorageReady(true);
-      // Load voice preference
-      try {
-        const v = await window.storage.get("voice-idx");
-        if (v && v.value) { const vi = parseInt(v.value); setVoiceIdx(vi); selectedVoiceIdx = vi; }
-      } catch (e) {}
-      // Init voices
-      window.speechSynthesis.getVoices();
-    })();
+    try {
+      const res = localStorage.getItem("spelling-lists");
+      if (res) setSavedLists(JSON.parse(res));
+    } catch (e) { /* no saved data yet */ }
+    try {
+      const v = localStorage.getItem("voice-idx");
+      if (v) { const vi = parseInt(v); setVoiceIdx(vi); selectedVoiceIdx = vi; }
+    } catch (e) {}
+    window.speechSynthesis.getVoices();
   }, []);
 
-  const saveList = async (name, wordList) => {
+  const saveList = (name, wordList) => {
     const updated = { ...savedLists, [name]: wordList };
     setSavedLists(updated);
-    try { await window.storage.set("spelling-lists", JSON.stringify(updated)); } catch (e) {}
+    try { localStorage.setItem("spelling-lists", JSON.stringify(updated)); } catch (e) {}
   };
 
-  const deleteList = async (name) => {
+  const deleteList = (name) => {
     const updated = { ...savedLists };
     delete updated[name];
     setSavedLists(updated);
-    try { await window.storage.set("spelling-lists", JSON.stringify(updated)); } catch (e) {}
+    try { localStorage.setItem("spelling-lists", JSON.stringify(updated)); } catch (e) {}
   };
 
-  const setVoice = async (i) => {
+  const setVoice = (i) => {
     setVoiceIdx(i);
     selectedVoiceIdx = i;
-    try { await window.storage.set("voice-idx", String(i)); } catch (e) {}
+    try { localStorage.setItem("voice-idx", String(i)); } catch (e) {}
   };
 
   const startGame = (id) => { setActiveGame(id); setScreen("game"); };
